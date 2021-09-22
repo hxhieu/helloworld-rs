@@ -1,15 +1,10 @@
 [package]
-name = "amethyst-starter-2d"
-version = "0.2.0"
-authors = ["Hilmar Wiegand <me@hwgnd.de>", "Amethyst Foundation <contact@amethyst.rs>"]
+name = "helloworld-rs"
+version = "0.1.0"
 edition = "2018"
 
-[dependencies]
-amethyst = {version = "0.15.2", features = ["no-slow-safety-checks"]}
-log = { version = "0.4.8", features = ["serde"] }
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[features]
-default = ["vulkan"]
-empty = ["amethyst/empty"]
-metal = ["amethyst/metal"]
-vulkan = ["amethyst/vulkan"]
+[dependencies]
+bevy = { version = "0.5.0", features = ["dynamic"] }
+bevy-inspector-egui = { version = "0.6.1" }

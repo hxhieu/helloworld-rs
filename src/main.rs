@@ -1,45 +1,51 @@
-use amethyst::{
-    core::transform::TransformBundle,
-    input::{InputBundle, StringBindings},
-    prelude::*,
-    renderer::{
-        plugins::{RenderFlat2D, RenderToWindow},
-        types::DefaultBackend,
-        RenderingBundle,
-    },
-    ui::{RenderUi, UiBundle},
-    utils::application_root_dir,
-};
+use bevy::prelude::*;
+use bevy_inspector_egui::{Inspectable, InspectorPlugin, WorldInspectorPlugin};
 
-mod state;
+#[derive(Inspectable)]
+struct Person {
+    text: String,
+}
+struct Name(String);
+struct GreetTimer(Timer);
 
-fn main() -> amethyst::Result<()> {
-    amethyst::start_logger(Default::default());
+pub struct HelloPlugin;
 
-    let app_root = application_root_dir()?;
+impl Plugin for HelloPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        app.insert_resource(GreetTimer(Timer::from_seconds(2.0, true)))
+            .add_startup_system(add_people.system())
+            .add_system(greet_people.system());
+    }
+}
 
-    let resources = app_root.join("assets");
-    let display_config = app_root.join("config/display_config.ron");
-    let key_bindings_path = app_root.join("config/input.ron");
+fn main() {
+    App::build()
+        .add_plugins(DefaultPlugins)
+        .add_plugin(WorldInspectorPlugin::new())
+        .add_plugin(HelloPlugin)
+        .run();
+}
 
-    let game_data = GameDataBuilder::default()
-        .with_bundle(TransformBundle::new())?
-        .with_bundle(
-            InputBundle::<StringBindings>::new().with_bindings_from_file(&key_bindings_path)?,
-        )?
-        .with_bundle(UiBundle::<StringBindings>::new())?
-        .with_bundle(
-            RenderingBundle::<DefaultBackend>::new()
-                .with_plugin(
-                    RenderToWindow::from_config_path(display_config)?
-                        .with_clear([0.34, 0.36, 0.52, 1.0]),
-                )
-                .with_plugin(RenderUi::default())
-                .with_plugin(RenderFlat2D::default()),
-        )?;
+fn add_people(mut commands: Commands) {
+    commands
+        .spawn()
+        .insert(Person {
+            text: "Hugh Hoang".to_string(),
+        })
+        .insert(Name("Hugh Hoang".to_string()));
 
-    let mut game = Application::new(resources, state::MyState, game_data)?;
-    game.run();
+    commands
+        .spawn()
+        .insert(Person {
+            text: "Hugh Hoang".to_string(),
+        })
+        .insert(Name("Andy Hoang".to_string()));
+}
 
-    Ok(())
+fn greet_people(time: Res<Time>, mut timer: ResMut<GreetTimer>, query: Query<&Name, With<Person>>) {
+    if timer.0.tick(time.delta()).just_finished() {
+        for name in query.iter() {
+            println!("hello {}!", name.0)
+        }
+    }
 }
